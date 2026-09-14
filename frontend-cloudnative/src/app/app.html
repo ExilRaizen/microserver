@@ -1,0 +1,15 @@
+<header>
+  <h1>Cloud Native - Demo MSAL</h1>
+  @if (!isLoggedIn()) {
+    <button (click)="login()">Iniciar sesión</button>
+  }
+  @if (isLoggedIn()) {
+    <button (click)="logout()">Cerrar sesión</button>
+    <button (click)="probarPedido()">Probar Pedidos</button>
+    @if (testResult()) {
+      <p>{{ testResult() }}</p>
+    }
+  }
+</header>
+
+<router-outlet></router-outlet>
