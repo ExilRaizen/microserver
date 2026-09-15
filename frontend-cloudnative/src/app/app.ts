@@ -53,4 +53,25 @@ export class App implements OnInit {
       error: (err) => this.testResult.set(`Error ${err.status}: ${JSON.stringify(err.error)}`)
     });
   }
+
+  probarCatalogo(): void {
+    this.testResult.set('Consultando catálogo...');
+    const url = `${environment.apiConfig.pedidosApiUrl}/api/catalogo`;
+
+    this.http.get<unknown[]>(url).subscribe({
+      next: (res) => this.testResult.set(`OK: ${res.length} plan(es) en el catálogo`),
+      error: (err) => this.testResult.set(`Error ${err.status}: ${JSON.stringify(err.error)}`)
+    });
+  }
+
+  probarSoporte(): void {
+    this.testResult.set('Creando ticket de prueba...');
+    const url = `${environment.apiConfig.pedidosApiUrl}/api/soporte`;
+    const body = { asunto: 'Prueba desde el frontend', mensaje: 'Este es un ticket de prueba.' };
+
+    this.http.post<{ id: number }>(url, body).subscribe({
+      next: (res) => this.testResult.set(`OK: ticket #${res.id} creado`),
+      error: (err) => this.testResult.set(`Error ${err.status}: ${JSON.stringify(err.error)}`)
+    });
+  }
 }

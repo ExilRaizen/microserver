@@ -1,60 +1,57 @@
-package micro.pedidos.pedidos_backend.controller;
+package micro.soporte.soporte_backend.controller;
 
-import micro.pedidos.pedidos_backend.model.Pedido;
-import micro.pedidos.pedidos_backend.repository.PedidoRepository;
+import micro.soporte.soporte_backend.model.Ticket;
+import micro.soporte.soporte_backend.repository.TicketRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pedidos")
-public class PedidoController {
+@RequestMapping("/api/soporte")
+public class TicketController {
 
-    private final PedidoRepository pedidoRepository;
+    private final TicketRepository ticketRepository;
 
-    public PedidoController(PedidoRepository pedidoRepository) {
-        this.pedidoRepository = pedidoRepository;
+    public TicketController(TicketRepository ticketRepository) {
+        this.ticketRepository = ticketRepository;
     }
 
-    @GetMapping("/ping")
-    public String ping() {
-        return "Pedidos backend activo y autenticado";
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_Pedidos.Create')")
-    @GetMapping("/crear")
-    public String crear() {
-        return "Tienes permiso para crear pedidos";
-    }
-
-    @PreAuthorize("hasAuthority('SCOPE_Pedidos.Create')")
+    @PreAuthorize("hasAuthority('SCOPE_Soporte.Create')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Pedido crearPedido(@RequestBody PedidoRequest request, Authentication authentication) {
-        Pedido pedido = new Pedido(
+    public Ticket crear(@RequestBody TicketRequest request, Authentication authentication) {
+        Ticket ticket = new Ticket(
                 extraerEmail(authentication),
-                request.producto(),
-                request.cantidad(),
-                "PENDIENTE",
+                request.asunto(),
+                request.mensaje(),
+                "ABIERTO",
                 LocalDateTime.now()
         );
-        return pedidoRepository.save(pedido);
+        return ticketRepository.save(ticket);
     }
 
     @GetMapping
-    public List<Pedido> listarPedidos() {
-        return pedidoRepository.findAll();
+    public List<Ticket> listar() {
+        return ticketRepository.findAll();
+    }
+
+    @GetMapping("/{id}")
+    public Ticket obtener(@PathVariable Long id) {
+        return ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket no encontrado"));
     }
 
     private String extraerEmail(Authentication authentication) {

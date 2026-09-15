@@ -9,6 +9,8 @@ export const environment = {
   },
   apiConfig: {
     pedidosApiUrl: 'https://jflrtvr9ch.execute-api.us-east-1.amazonaws.com',
-    pedidosScope: 'api://0e7d4bab-2455-4de8-bb75-c49e17617089/Pedidos.Create'
+    pedidosScope: 'api://0e7d4bab-2455-4de8-bb75-c49e17617089/Pedidos.Create',
+    catalogoScope: 'api://0e7d4bab-2455-4de8-bb75-c49e17617089/Catalogo.Manage',
+    soporteScope: 'api://0e7d4bab-2455-4de8-bb75-c49e17617089/Soporte.Create'
   }
 };

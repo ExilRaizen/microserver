@@ -44,7 +44,12 @@ function msalGuardConfigFactory(): MsalGuardConfiguration {
 
 function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   const protectedResourceMap = new Map<string, Array<string>>();
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/*`, [environment.apiConfig.pedidosScope]);
+  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/pedidos`, [environment.apiConfig.pedidosScope]);
+  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/pedidos/*`, [environment.apiConfig.pedidosScope]);
+  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/catalogo`, [environment.apiConfig.catalogoScope]);
+  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/catalogo/*`, [environment.apiConfig.catalogoScope]);
+  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/soporte`, [environment.apiConfig.soporteScope]);
+  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/soporte/*`, [environment.apiConfig.soporteScope]);
 
   return {
     interactionType: InteractionType.Redirect,
