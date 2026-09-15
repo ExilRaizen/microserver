@@ -1,4 +1,4 @@
-# Pedidos360 (Microservers)
+# MicroServers
 
 Encargo final (EP1) de Cloud Native I (DSY1107, DuocUC). Sistema con frontend Angular + MSAL y backend de microservicios Spring Boot, autenticado con Azure AD (Entra ID) y desplegado en AWS.
 
