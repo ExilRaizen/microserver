@@ -32,22 +32,22 @@ public class LogsRabbitMQConfig {
     // Cada binding une una cola a un exchange con una routing key.
 
     @Bean
-    public Binding bindAllLogsForInfo(DirectExchange exchange, Queue allLogsQueue) {
-        return BindingBuilder.bind(allLogsQueue).to(exchange).with("INFO");
+    public Binding bindAllLogsForInfo(DirectExchange directExchange, Queue allLogsQueue) {
+        return BindingBuilder.bind(allLogsQueue).to(directExchange).with("INFO");
     }
 
     @Bean
-    public Binding bindAllLogsForWarning(DirectExchange exchange, Queue allLogsQueue) {
-        return BindingBuilder.bind(allLogsQueue).to(exchange).with("WARNING");
+    public Binding bindAllLogsForWarning(DirectExchange directExchange, Queue allLogsQueue) {
+        return BindingBuilder.bind(allLogsQueue).to(directExchange).with("WARNING");
     }
 
     @Bean
-    public Binding bindAllLogsForError(DirectExchange exchange, Queue allLogsQueue) {
-        return BindingBuilder.bind(allLogsQueue).to(exchange).with("ERROR");
+    public Binding bindAllLogsForError(DirectExchange directExchange, Queue allLogsQueue) {
+        return BindingBuilder.bind(allLogsQueue).to(directExchange).with("ERROR");
     }
 
     @Bean
-    public Binding bindErrorsOnly(DirectExchange exchange, Queue errorsOnlyQueue) {
-        return BindingBuilder.bind(errorsOnlyQueue).to(exchange).with("ERROR");
+    public Binding bindErrorsOnly(DirectExchange directExchange, Queue errorsOnlyQueue) {
+        return BindingBuilder.bind(errorsOnlyQueue).to(directExchange).with("ERROR");
     }
 }
