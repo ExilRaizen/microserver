@@ -1,6 +1,6 @@
 package micro.pedidos.pedidos_backend.controller;
 
-import micro.pedidos.pedidos_backend.messaging.Sender;
+import micro.pedidos.pedidos_backend.messaging.PedidoEventPublisher;
 import micro.pedidos.pedidos_backend.model.Pedido;
 import micro.pedidos.pedidos_backend.repository.PedidoRepository;
 import org.springframework.http.HttpStatus;
@@ -23,11 +23,11 @@ import java.util.List;
 public class PedidoController {
 
     private final PedidoRepository pedidoRepository;
-    private final Sender sender;
+    private final PedidoEventPublisher pedidoEventPublisher;
 
-    public PedidoController(PedidoRepository pedidoRepository, Sender sender) {
+    public PedidoController(PedidoRepository pedidoRepository, PedidoEventPublisher pedidoEventPublisher) {
         this.pedidoRepository = pedidoRepository;
-        this.sender = sender;
+        this.pedidoEventPublisher = pedidoEventPublisher;
     }
 
     @GetMapping("/ping")
@@ -43,7 +43,7 @@ public class PedidoController {
 
     /**
      * Crea un pedido, lo guarda en la base de datos
-     * y envía un mensaje a RabbitMQ usando el Sender
+     * y publica el evento "pedido creado" para que Soporte lo procese.
      */
     @PreAuthorize("hasAuthority('SCOPE_Pedidos.Create')")
     @PostMapping
@@ -57,15 +57,7 @@ public class PedidoController {
                 LocalDateTime.now()
         );
         Pedido guardado = pedidoRepository.save(pedido);
-
-        sender.sendMessage(String.format(
-                "Pedido #%d | %s x%d | cliente: %s",
-                guardado.getId(),
-                guardado.getProducto(),
-                guardado.getCantidad(),
-                guardado.getClienteEmail()
-        ));
-
+        pedidoEventPublisher.publicarPedidoCreado(guardado);
         return guardado;
     }
 
