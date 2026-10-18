@@ -19,9 +19,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/rabbitmq/**", "/api/listeners/**"))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/rabbitmq/**", "/api/listeners/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}));
