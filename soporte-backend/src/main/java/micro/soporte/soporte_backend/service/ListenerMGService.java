@@ -1,4 +1,4 @@
-package micro.soporte.soporte_backend.Service;
+package micro.soporte.soporte_backend.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

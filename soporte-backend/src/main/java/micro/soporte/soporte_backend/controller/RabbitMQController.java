@@ -1,6 +1,6 @@
 package micro.soporte.soporte_backend.controller;
 
-import micro.soporte.soporte_backend.Service.RabbitResourceManager;
+import micro.soporte.soporte_backend.service.RabbitResourceManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -1,6 +1,6 @@
 package micro.soporte.soporte_backend.controller;
 
-import micro.soporte.soporte_backend.Service.ListenerMGService;
+import micro.soporte.soporte_backend.service.ListenerMGService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
