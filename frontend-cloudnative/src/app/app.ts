@@ -45,18 +45,20 @@ export class App implements OnInit {
   }
 
   probarPedido(): void {
-    this.testResult.set('Consultando...');
-    const url = `${environment.apiConfig.pedidosApiUrl}/api/pedidos/crear`;
+    this.testResult.set('Creando pedido...');
+    const url = `${environment.apiConfig.pedidosApiUrl}/api/pedidos`;
+    const body = { producto: 'Plan Minecraft 4GB', cantidad: 1 };
 
-    this.http.get(url, { responseType: 'text' }).subscribe({
-      next: (res) => this.testResult.set(`OK: ${res}`),
+    // El pedido se guarda y se publica en RabbitMQ; Soporte lo procesa y crea la notificación
+    this.http.post<{ id: number }>(url, body).subscribe({
+      next: (res) => this.testResult.set(`OK: pedido #${res.id} creado y enviado a RabbitMQ`),
       error: (err) => this.testResult.set(`Error ${err.status}: ${JSON.stringify(err.error)}`)
     });
   }
 
   probarCatalogo(): void {
     this.testResult.set('Consultando catálogo...');
-    const url = `${environment.apiConfig.pedidosApiUrl}/api/catalogo`;
+    const url = `${environment.apiConfig.catalogoApiUrl}/api/catalogo`;
 
     this.http.get<unknown[]>(url).subscribe({
       next: (res) => this.testResult.set(`OK: ${res.length} plan(es) en el catálogo`),
@@ -66,7 +68,7 @@ export class App implements OnInit {
 
   probarSoporte(): void {
     this.testResult.set('Creando ticket de prueba...');
-    const url = `${environment.apiConfig.pedidosApiUrl}/api/soporte`;
+    const url = `${environment.apiConfig.soporteApiUrl}/api/soporte`;
     const body = { asunto: 'Prueba desde el frontend', mensaje: 'Este es un ticket de prueba.' };
 
     this.http.post<{ id: number }>(url, body).subscribe({

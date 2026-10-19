@@ -43,13 +43,16 @@ function msalGuardConfigFactory(): MsalGuardConfiguration {
 }
 
 function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
+  const { pedidosApiUrl, catalogoApiUrl, soporteApiUrl, pedidosScope, catalogoScope, soporteScope } = environment.apiConfig;
+
+  // Cada microservicio tiene su propia URL; MSAL adjunta el token con el scope que corresponde
   const protectedResourceMap = new Map<string, Array<string>>();
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/pedidos`, [environment.apiConfig.pedidosScope]);
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/pedidos/*`, [environment.apiConfig.pedidosScope]);
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/catalogo`, [environment.apiConfig.catalogoScope]);
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/catalogo/*`, [environment.apiConfig.catalogoScope]);
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/soporte`, [environment.apiConfig.soporteScope]);
-  protectedResourceMap.set(`${environment.apiConfig.pedidosApiUrl}/api/soporte/*`, [environment.apiConfig.soporteScope]);
+  protectedResourceMap.set(`${pedidosApiUrl}/api/pedidos`, [pedidosScope]);
+  protectedResourceMap.set(`${pedidosApiUrl}/api/pedidos/*`, [pedidosScope]);
+  protectedResourceMap.set(`${catalogoApiUrl}/api/catalogo`, [catalogoScope]);
+  protectedResourceMap.set(`${catalogoApiUrl}/api/catalogo/*`, [catalogoScope]);
+  protectedResourceMap.set(`${soporteApiUrl}/api/soporte`, [soporteScope]);
+  protectedResourceMap.set(`${soporteApiUrl}/api/soporte/*`, [soporteScope]);
 
   return {
     interactionType: InteractionType.Redirect,

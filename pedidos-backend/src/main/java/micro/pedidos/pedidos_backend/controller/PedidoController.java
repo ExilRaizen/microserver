@@ -1,5 +1,6 @@
 package micro.pedidos.pedidos_backend.controller;
 
+import micro.pedidos.pedidos_backend.messaging.PedidoEventPublisher;
 import micro.pedidos.pedidos_backend.model.Pedido;
 import micro.pedidos.pedidos_backend.repository.PedidoRepository;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,11 @@ import java.util.List;
 public class PedidoController {
 
     private final PedidoRepository pedidoRepository;
+    private final PedidoEventPublisher pedidoEventPublisher;
 
-    public PedidoController(PedidoRepository pedidoRepository) {
+    public PedidoController(PedidoRepository pedidoRepository, PedidoEventPublisher pedidoEventPublisher) {
         this.pedidoRepository = pedidoRepository;
+        this.pedidoEventPublisher = pedidoEventPublisher;
     }
 
     @GetMapping("/ping")
@@ -38,6 +41,10 @@ public class PedidoController {
         return "Tienes permiso para crear pedidos";
     }
 
+    /**
+     * Crea un pedido, lo guarda en la base de datos
+     * y publica el evento "pedido creado" para que Soporte lo procese.
+     */
     @PreAuthorize("hasAuthority('SCOPE_Pedidos.Create')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -49,7 +56,9 @@ public class PedidoController {
                 "PENDIENTE",
                 LocalDateTime.now()
         );
-        return pedidoRepository.save(pedido);
+        Pedido guardado = pedidoRepository.save(pedido);
+        pedidoEventPublisher.publicarPedidoCreado(guardado);
+        return guardado;
     }
 
     @GetMapping
