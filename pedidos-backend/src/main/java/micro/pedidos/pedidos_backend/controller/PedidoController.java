@@ -1,6 +1,7 @@
 package micro.pedidos.pedidos_backend.controller;
 
 import micro.pedidos.pedidos_backend.messaging.PedidoEventPublisher;
+import micro.pedidos.pedidos_backend.messaging.kafka.PedidoKafkaPublisher;
 import micro.pedidos.pedidos_backend.model.Pedido;
 import micro.pedidos.pedidos_backend.repository.PedidoRepository;
 import org.springframework.http.HttpStatus;
@@ -24,10 +25,14 @@ public class PedidoController {
 
     private final PedidoRepository pedidoRepository;
     private final PedidoEventPublisher pedidoEventPublisher;
+    private final PedidoKafkaPublisher pedidoKafkaPublisher;
 
-    public PedidoController(PedidoRepository pedidoRepository, PedidoEventPublisher pedidoEventPublisher) {
+    public PedidoController(PedidoRepository pedidoRepository,
+                            PedidoEventPublisher pedidoEventPublisher,
+                            PedidoKafkaPublisher pedidoKafkaPublisher) {
         this.pedidoRepository = pedidoRepository;
         this.pedidoEventPublisher = pedidoEventPublisher;
+        this.pedidoKafkaPublisher = pedidoKafkaPublisher;
     }
 
     @GetMapping("/ping")
@@ -42,8 +47,9 @@ public class PedidoController {
     }
 
     /**
-     * Crea un pedido, lo guarda en la base de datos
-     * y publica el evento "pedido creado" para que Soporte lo procese.
+     * Crea un pedido, lo guarda en la base de datos y publica el evento:
+     * - en RabbitMQ, para que Soporte lo procese con ACK y DLQ;
+     * - en Kafka, como historial que leen la analítica de Soporte y el stock de Catálogo.
      */
     @PreAuthorize("hasAuthority('SCOPE_Pedidos.Create')")
     @PostMapping
@@ -58,6 +64,7 @@ public class PedidoController {
         );
         Pedido guardado = pedidoRepository.save(pedido);
         pedidoEventPublisher.publicarPedidoCreado(guardado);
+        pedidoKafkaPublisher.publicarPedidoCreado(guardado);
         return guardado;
     }
 
