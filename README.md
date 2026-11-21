@@ -16,7 +16,7 @@ Angular (MSAL) ──┬──> Pedidos  :8081 ──(pedido.creado)──> Rabb
                  ├──> Catálogo :8082                                                         ▲
                  └──> Soporte  :8083                                                         │
                                                                                              │
-                 Kafka (Zookeeper + 3 brokers)                                               │
+                 Kafka (3 Zookeeper + 3 brokers)                                               │
    Pedidos ──────> pedidos.eventos ──┬──> Soporte  (grupo soporte-analitica) ────────────────┘
                                      └──> Catálogo (grupo catalogo-stock)
    Catálogo ─────> catalogo.planes ─────> Pedidos  (grupo pedidos-catalogo)
@@ -28,7 +28,7 @@ Angular (MSAL) ──┬──> Pedidos  :8081 ──(pedido.creado)──> Rabb
 - **Frontend**: Angular + `@azure/msal-angular`. Inicia sesión con Redirect y el `MsalInterceptor` adjunta el token con el scope que corresponde a cada microservicio (`protectedResourceMap`).
 - **Backend**: 3 microservicios Spring Boot independientes. Cada uno valida el JWT con `oauth2ResourceServer().jwt()`.
 - **Mensajería**: RabbitMQ 4.2 en un cluster de 2 nodos con Docker.
-- **Streaming**: Kafka 3.5 (Confluent 7.5) con Zookeeper y 3 brokers, más Kafka-UI para administrarlo.
+- **Streaming**: Kafka 3.5 (Confluent 7.5) con 3 nodos de Zookeeper y 3 brokers, más Kafka-UI para administrarlo.
 - **Base de datos**: PostgreSQL compartida por los 3 microservicios.
 
 ## Microservicios
@@ -289,7 +289,8 @@ docker compose up -d
 Esto levanta:
 
 - Los dos nodos de RabbitMQ (`rabbitmq-1` en los puertos 5672/15672 y `rabbitmq-2` en 5673/15673), que forman el cluster solos con `rabbitmq.conf`. El panel queda en `http://localhost:15672`.
-- Zookeeper (2181) y 3 brokers de Kafka (`kafka-1`, `kafka-2` y `kafka-3` en 9092, 9093 y 9094). Cada broker tiene dos listeners: uno interno (`kafka-N:29092`) para hablar entre ellos y con Kafka-UI, y otro (`localhost:909X`) para los microservicios que corren fuera de Docker.
+- 3 nodos de Zookeeper (`zookeeper`, `zookeeper-2` y `zookeeper-3` en 2181, 2182 y 2183) que forman un ensemble: guardan los metadatos del cluster y siguen funcionando mientras haya mayoría (2 de 3).
+- 3 brokers de Kafka (`kafka-1`, `kafka-2` y `kafka-3` en 9092, 9093 y 9094). Cada broker tiene dos listeners: uno interno (`kafka-N:29092`) para hablar entre ellos y con Kafka-UI, y otro (`localhost:909X`) para los microservicios que corren fuera de Docker.
 - Kafka-UI en `http://localhost:8080`, para ver brokers, tópicos, mensajes y grupos de consumidores.
 - PostgreSQL en el puerto 5432.
 
