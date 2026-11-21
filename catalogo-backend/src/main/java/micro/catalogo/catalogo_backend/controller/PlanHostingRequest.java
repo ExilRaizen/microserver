@@ -6,6 +6,7 @@ public record PlanHostingRequest(
         Integer ram,
         Integer slots,
         Double precio,
-        Boolean disponible
+        Boolean disponible,
+        Integer stock
 ) {
 }

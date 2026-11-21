@@ -2,9 +2,14 @@ package micro.pedidos.pedidos_backend.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.config.TopicConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.kafka.listener.CommonErrorHandler;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.util.backoff.FixedBackOff;
 
 /**
  * Configuración centralizada de Kafka para Pedidos.
@@ -14,13 +19,21 @@ import org.springframework.kafka.config.TopicBuilder;
  *
  *   pedidos.eventos      -> historial de pedidos creados (lo leen Soporte y Catálogo)
  *   pedidos.eventos.DLT  -> eventos que un consumidor no pudo procesar
+ *
+ * Además consume "catalogo.planes" (lo declara Catálogo) para tener una copia local de los planes.
  */
 @Configuration
 public class KafkaConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(KafkaConfig.class);
+
     // ========== Tópicos ==========
     public static final String PEDIDOS_EVENTOS_TOPIC = "pedidos.eventos";
     public static final String PEDIDOS_EVENTOS_DLT = "pedidos.eventos.DLT";
+    public static final String CATALOGO_PLANES_TOPIC = "catalogo.planes";
+
+    // ========== Grupos de consumidores ==========
+    public static final String GRUPO_CATALOGO = "pedidos-catalogo";
 
     // ========== Parámetros comunes ==========
     private static final int PARTICIONES = 3;
@@ -60,5 +73,22 @@ public class KafkaConfig {
                 .config(TopicConfig.RETENTION_MS_CONFIG, RETENCION_30_DIAS)
                 .config(TopicConfig.MIN_IN_SYNC_REPLICAS_CONFIG, MIN_REPLICAS_SINCRONIZADAS)
                 .build();
+    }
+
+    /**
+     * Manejo de errores del consumidor de "catalogo.planes": 2 reintentos con 1 segundo de espera.
+     * Si sigue fallando, el evento se registra en el log y se salta. No hace falta un DLT:
+     * el tópico es compactado, así que el próximo cambio de ese plan trae su estado completo.
+     */
+    @Bean
+    public CommonErrorHandler kafkaErrorHandler() {
+        DefaultErrorHandler manejador = new DefaultErrorHandler(
+                (registro, error) -> log.error("[KAFKA] Se omite el evento {}-{} offset {}: {}",
+                        registro.topic(), registro.partition(), registro.offset(), error.getMessage()),
+                new FixedBackOff(1000L, 2L));
+        manejador.setRetryListeners((registro, error, intento) ->
+                log.warn("[KAFKA-REINTENTO] Intento {} falló | {}-{} offset {}",
+                        intento, registro.topic(), registro.partition(), registro.offset()));
+        return manejador;
     }
 }

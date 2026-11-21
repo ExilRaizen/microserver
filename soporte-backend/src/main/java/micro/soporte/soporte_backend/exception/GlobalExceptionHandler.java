@@ -73,6 +73,19 @@ public class GlobalExceptionHandler {
                 List.of("No se pudo completar la operación en RabbitMQ, intenta nuevamente"));
     }
 
+    // Kafka rechazó la operación por los datos enviados
+    @ExceptionHandler(SolicitudKafkaInvalidaException.class)
+    public ResponseEntity<ErrorResponse> manejarSolicitudKafkaInvalida(SolicitudKafkaInvalidaException ex) {
+        return responder(HttpStatus.BAD_REQUEST, "Operación de Kafka inválida", List.of(ex.getMessage()));
+    }
+
+    // Kafka no disponible o no respondió a tiempo
+    @ExceptionHandler(KafkaNoDisponibleException.class)
+    public ResponseEntity<ErrorResponse> manejarKafkaNoDisponible(KafkaNoDisponibleException ex) {
+        log.error("[KAFKA-ADMIN] {}", ex.getMessage());
+        return responder(HttpStatus.SERVICE_UNAVAILABLE, "Kafka no disponible", List.of(ex.getMessage()));
+    }
+
     private ResponseEntity<ErrorResponse> responder(HttpStatus status, String error, List<String> detalles) {
         ErrorResponse body = new ErrorResponse(LocalDateTime.now(), status.value(), error, detalles);
         return ResponseEntity.status(status).body(body);

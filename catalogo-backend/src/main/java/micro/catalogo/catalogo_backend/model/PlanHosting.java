@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 @Entity
 public class PlanHosting {
 
+    public static final int STOCK_POR_DEFECTO = 10;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -31,16 +33,22 @@ public class PlanHosting {
     @Column(nullable = false)
     private Boolean disponible;
 
+    // Los planes que ya existían reciben 10 al agregar la columna
+    @Column(nullable = false, columnDefinition = "integer default 10")
+    private Integer stock = PlanHosting.STOCK_POR_DEFECTO;
+
     public PlanHosting() {
     }
 
-    public PlanHosting(String nombre, String tipoServidor, Integer ram, Integer slots, Double precio, Boolean disponible) {
+    public PlanHosting(String nombre, String tipoServidor, Integer ram, Integer slots, Double precio,
+                       Boolean disponible, Integer stock) {
         this.nombre = nombre;
         this.tipoServidor = tipoServidor;
         this.ram = ram;
         this.slots = slots;
         this.precio = precio;
         this.disponible = disponible;
+        this.stock = stock;
     }
 
     public Long getId() {
@@ -93,5 +101,24 @@ public class PlanHosting {
 
     public void setDisponible(Boolean disponible) {
         this.disponible = disponible;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    /**
+     * Descuenta unidades vendidas. El stock nunca queda negativo y,
+     * si llega a 0, el plan deja de estar disponible para nuevos pedidos.
+     */
+    public void descontarStock(int cantidad) {
+        this.stock = Math.max(0, this.stock - cantidad);
+        if (this.stock == 0) {
+            this.disponible = false;
+        }
     }
 }

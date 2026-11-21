@@ -1,0 +1,6 @@
+# Configuración local del editor (se genera al ejecutar desde VS Code)
+.vscode/
+.idea/
+
+# Variables de entorno locales
+.env

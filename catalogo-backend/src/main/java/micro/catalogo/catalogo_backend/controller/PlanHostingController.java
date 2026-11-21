@@ -1,5 +1,6 @@
 package micro.catalogo.catalogo_backend.controller;
 
+import micro.catalogo.catalogo_backend.messaging.kafka.PlanKafkaPublisher;
 import micro.catalogo.catalogo_backend.model.PlanHosting;
 import micro.catalogo.catalogo_backend.repository.PlanHostingRepository;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,12 @@ import java.util.List;
 public class PlanHostingController {
 
     private final PlanHostingRepository planHostingRepository;
+    private final PlanKafkaPublisher planKafkaPublisher;
 
-    public PlanHostingController(PlanHostingRepository planHostingRepository) {
+    public PlanHostingController(PlanHostingRepository planHostingRepository,
+                                 PlanKafkaPublisher planKafkaPublisher) {
         this.planHostingRepository = planHostingRepository;
+        this.planKafkaPublisher = planKafkaPublisher;
     }
 
     @GetMapping
@@ -38,6 +42,10 @@ public class PlanHostingController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plan no encontrado"));
     }
 
+    /**
+     * Cada cambio en un plan se publica en "catalogo.planes" para que Pedidos
+     * tenga siempre el estado actual del catálogo sin tener que llamar a este servicio.
+     */
     @PreAuthorize("hasAuthority('SCOPE_Catalogo.Manage')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -48,9 +56,12 @@ public class PlanHostingController {
                 request.ram(),
                 request.slots(),
                 request.precio(),
-                request.disponible()
+                request.disponible(),
+                validarStock(request.stock() != null ? request.stock() : PlanHosting.STOCK_POR_DEFECTO)
         );
-        return planHostingRepository.save(plan);
+        PlanHosting guardado = planHostingRepository.save(plan);
+        planKafkaPublisher.publicarPlan(guardado);
+        return guardado;
     }
 
     @PreAuthorize("hasAuthority('SCOPE_Catalogo.Manage')")
@@ -64,7 +75,13 @@ public class PlanHostingController {
         plan.setSlots(request.slots());
         plan.setPrecio(request.precio());
         plan.setDisponible(request.disponible());
-        return planHostingRepository.save(plan);
+        // Si no se envía stock, se mantiene el actual
+        if (request.stock() != null) {
+            plan.setStock(validarStock(request.stock()));
+        }
+        PlanHosting guardado = planHostingRepository.save(plan);
+        planKafkaPublisher.publicarPlan(guardado);
+        return guardado;
     }
 
     @PreAuthorize("hasAuthority('SCOPE_Catalogo.Manage')")
@@ -72,5 +89,14 @@ public class PlanHostingController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
         planHostingRepository.deleteById(id);
+        // Tombstone: evento sin valor que le indica a Kafka y a Pedidos que el plan ya no existe
+        planKafkaPublisher.publicarEliminacion(id);
+    }
+
+    private int validarStock(int stock) {
+        if (stock < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El stock no puede ser negativo");
+        }
+        return stock;
     }
 }

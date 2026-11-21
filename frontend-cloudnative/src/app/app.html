@@ -15,8 +15,22 @@
       }
     </div>
 
+    @if (isLoggedIn()) {
+      <div class="actions">
+        <span class="actions-label">Kafka</span>
+        <button class="btn btn-secondary" (click)="verAnaliticaPlanes()">Analítica por plan</button>
+        <button class="btn btn-secondary" (click)="verAnaliticaClientes()">Analítica por cliente</button>
+        <button class="btn btn-secondary" (click)="verCatalogoLocal()">Catálogo local</button>
+        <button class="btn btn-secondary" (click)="verTopicsKafka()">Tópicos</button>
+        <button class="btn btn-secondary" (click)="verGruposKafka()">Grupos</button>
+      </div>
+    }
+
     @if (testResult()) {
       <p class="result">{{ testResult() }}</p>
+    }
+    @if (detalle()) {
+      <pre class="detalle">{{ detalle() }}</pre>
     }
   </header>
 

@@ -53,6 +53,9 @@ function msalInterceptorConfigFactory(): MsalInterceptorConfiguration {
   protectedResourceMap.set(`${catalogoApiUrl}/api/catalogo/*`, [catalogoScope]);
   protectedResourceMap.set(`${soporteApiUrl}/api/soporte`, [soporteScope]);
   protectedResourceMap.set(`${soporteApiUrl}/api/soporte/*`, [soporteScope]);
+  // Analítica y administración de Kafka (también en Soporte)
+  protectedResourceMap.set(`${soporteApiUrl}/api/analitica/*`, [soporteScope]);
+  protectedResourceMap.set(`${soporteApiUrl}/api/kafka/*`, [soporteScope]);
 
   return {
     interactionType: InteractionType.Redirect,
